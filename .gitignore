@@ -5,3 +5,4 @@
 00*
 fabfile.py
 other/
+*.gz
