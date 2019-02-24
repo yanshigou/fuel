@@ -14,7 +14,7 @@ class RefuelInfoSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class FuelInfoSerializer(serializers.ModelDurationField):
+class FuelInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = FuelInfo
         fields = '__all__'
