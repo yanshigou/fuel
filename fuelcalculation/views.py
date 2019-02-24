@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from rest_framework.views import APIView
 from .functions import random_str, http_response, is_user_exist
-from .models import CarInfo, RefuelInfo
+from .models import CarInfo, RefuelInfo, FuelInfo
 from .serializers import CarInfoSerializer, RefuelInfoSerializer, ExpenditureInfoSerializer, FuelInfoSerializer
 import json
 import requests
@@ -115,7 +115,7 @@ class SetCarInfoView(APIView):
 
     def get(self, request):
         try:
-            username = request.query_params['username']
+            username = request.query_params.get('username')
             if not is_user_exist(username):
                 return http_response(error_no=42, info="No User")
             cars = CarInfo.objects.filter(username_id=username)
@@ -156,18 +156,43 @@ class RefuelInfoView(APIView):
             # print(ser)
             if ser.is_valid():
                 ser.save()
+                # # 上一次有记录
+                # id = ser.data.values()[0]
+                # if is_norecord == "0" and RefuelInfo.objects.filter(time__lt=time).count() > 0:
+                #     last = RefuelInfo.objects.filter(time__lt=time).order_by('-time')[0]
+                #     last_mileages = last.mileages
+                #     print(last_mileages)
+                #     l = float(fuel_counts) * 100
+                #     km = int(mileages) - int(last_mileages)
+                #     if km <= 0:
+                #         return http_response(error_no=5, info="km error")
+                #     y = float(moneys)
+                #     fuel_l_km = float("%.2f" % (l / km))
+                #     print("fuel_l_km:", fuel_l_km)
+                #     fuel_y_km = float("%.2f" % (y / km))
+                #     print("fuel_y_km", fuel_y_km)
+                #     FuelInfo.objects.create(id_id=id, car_id_id=car_id, time=time, fuel_l_km=fuel_l_km,
+                #                             fuel_y_km=fuel_y_km, mileages=mileages, driving_km=km,
+                #                             driving_moneys=moneys, driving_fuel_counts=fuel_counts)
+                # # 上一次没有记录
+                # else:
+                #     FuelInfo.objects.create(id_id=id, car_id_id=car_id, time=time, fuel_l_km="???",
+                #                             fuel_y_km="???", mileages=mileages, driving_km="???",
+                #                             driving_moneys="???", driving_fuel_counts="???")
                 return http_response()
             return http_response(error_no=8, info="other error ")
         except KeyError:
             return http_response(error_no=1, info="input error")
+        except ZeroDivisionError:
+            return http_response(error_no=1, info="integer division or modulo by zero")
         except:
             traceback.print_exc()
             return http_response(error_no=2, info="cmx exception")
 
     def get(self, request):
         try:
-            username = request.query_params['username']
-            car_id = request.query_params['car_id']
+            username = request.query_params.get('username')
+            car_id = request.query_params.get('car_id')
             if not is_user_exist(username):
                 return http_response(error_no=42, info="No User")
             refuelinfo = RefuelInfo.objects.filter(car_id=car_id)
@@ -237,6 +262,75 @@ class RefuelInfoView(APIView):
             return http_response(error_no=2, info="cmx exception")
 
 
+# 油耗
+class FuelCalculationView(APIView):
+    def get(self, request):
+        try:
+            username = request.query_params.get("username")
+            car_id = request.query_params.get('car_id')
+            if not is_user_exist(username):
+                return http_response(error_no=42, info="No User")
+            all_refuelinfo = RefuelInfo.objects.filter(car_id=car_id)
+            sers = RefuelInfoSerializer(all_refuelinfo, many=True)
+            # 取出每次加油记录
+            for i in sers.data:
+                is_norecord = i.get('is_norecord')
+                id = i.get('id')
+                fuel_counts = i.get('fuel_counts')
+                mileages = i.get('mileages')
+                moneys = i.get('moneys')
+                time = i.get('time')
 
+                # 上一次有记录
+                if is_norecord == 0 and RefuelInfo.objects.filter(time__lt=time).count() > 0:
+                    last = RefuelInfo.objects.filter(time__lt=time).order_by('-time')[0]
+                    last_mileages = last.mileages
+                    l = float(fuel_counts) * 100
+                    km = int(mileages) - int(last_mileages)
+                    if km <= 0:
+                        print(mileages, last_mileages)
+                        return http_response(error_no=5, info="km error")
+                    y = float(moneys)
+                    fuel_l_km = float("%.2f" % (l / km))
+                    print("fuel_l_km:", fuel_l_km)
+                    fuel_y_km = float("%.2f" % (y / km))
+                    print("fuel_y_km", fuel_y_km)
+                    if FuelInfo.objects.filter(id_id=id, car_id_id=car_id).count() > 0:
+                        f = FuelInfo.objects.get(id_id=id, car_id_id=car_id)
+                        f.fuel_l_km = fuel_l_km
+                        f.fuel_y_km = fuel_y_km
+                        f.driving_km = km
+                        f.mileages = mileages
+                        f.time = time
+                        f.save()
+                    else:
+                        FuelInfo.objects.create(id_id=id, car_id_id=car_id, time=time, fuel_l_km=fuel_l_km,
+                                                fuel_y_km=fuel_y_km, mileages=mileages, driving_km=km,
+                                                driving_moneys=moneys, driving_fuel_counts=fuel_counts)
+                # 上一次没有记录
+                else:
+                    last_mileages = '???'
+                    if FuelInfo.objects.filter(id_id=id, car_id_id=car_id).count() > 0:
+                        f = FuelInfo.objects.get(id_id=id, car_id_id=car_id)
+                        f.fuel_l_km = last_mileages
+                        f.fuel_y_km = last_mileages
+                        f.driving_km = last_mileages
+                        f.mileages = mileages
+                        f.time = time
+                        f.save()
+                    else:
+                        FuelInfo.objects.create(id_id=id, car_id_id=car_id, time=time, fuel_l_km=last_mileages,
+                                                fuel_y_km=last_mileages, mileages=mileages, driving_km=last_mileages,
+                                                driving_moneys=last_mileages, driving_fuel_counts=last_mileages)
+
+            all_fuelinfo = FuelInfo.objects.filter(car_id_id=car_id)
+            sers = FuelInfoSerializer(all_fuelinfo, many=True)
+            print(sers)
+            return http_response(data={"all_fuelinfo": sers.data})
+        except KeyError:
+            return http_response(error_no=1, info="input error")
+        except:
+            traceback.print_exc()
+            return http_response(error_no=2, info="cmx exception")
 
 
