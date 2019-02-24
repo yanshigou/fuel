@@ -51,11 +51,15 @@ class RefuelInfo(models.Model):
 
 # 油耗记录表
 class FuelInfo(models.Model):
-    car_id = models.ForeignKey(CarInfo, to_field='car_id', verbose_name='ID')
+    id = models.OneToOneField(RefuelInfo, to_field='id', primary_key=True)
+    car_id = models.ForeignKey(CarInfo, to_field='car_id', verbose_name='车牌号')
     time = models.DateTimeField(verbose_name=u'加油时间')
     fuel_l_km = models.CharField(max_length=10, default='?', verbose_name=u'油耗升/百公里')
     fuel_y_km = models.CharField(max_length=10, default='?', verbose_name=u'油耗元/百公里')
-    mileage = models.CharField(max_length=10, verbose_name=u'里程碑总数/公里')
+    mileages = models.CharField(max_length=10, verbose_name=u'里程碑总数/公里')
+    driving_km = models.CharField(max_length=10, verbose_name=u'本次行驶里程/公里')
+    driving_moneys = models.CharField(max_length=10, verbose_name=u'本次行驶金额/元')
+    driving_fuel_counts = models.CharField(max_length=10, verbose_name=u'本次行驶使用油量/升')
 
 
 # 支出费用详情表
