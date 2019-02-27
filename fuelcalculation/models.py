@@ -69,3 +69,15 @@ class ExpenditureInfo(models.Model):
     remark = models.CharField(max_length=50, null=True, blank=True, verbose_name=u'备注')
     moneys = models.CharField(max_length=10, verbose_name=u'金额/元')
     info = models.CharField(max_length=10, verbose_name=u'用途')
+
+
+# 排行列表
+class RankingList(models.Model):
+    username = models.ForeignKey(UserProfile, to_field="username", verbose_name=u'用户')
+    car_id = models.ForeignKey(CarInfo, to_field='car_id', verbose_name='车牌号')
+    average_fuel_l_km = models.CharField(max_length=10, default='?', verbose_name=u'平均油耗升/百公里')
+    average_fuel_y_km = models.CharField(max_length=10, default='?', verbose_name=u'平均油耗元/百公里')
+    km = models.CharField(max_length=10, verbose_name=u'总里程/公里')
+    sum_km = models.CharField(max_length=10, verbose_name=u'总记录里程/公里')
+    sum_moneys = models.CharField(max_length=10, verbose_name=u'总花费金额/元')
+    sum_fuel_counts = models.CharField(max_length=10, verbose_name=u'总加了油量/升')
