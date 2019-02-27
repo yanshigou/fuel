@@ -3,8 +3,9 @@ from __future__ import unicode_literals
 
 from rest_framework.views import APIView
 from .functions import random_str, http_response, is_user_exist
-from .models import CarInfo, RefuelInfo, FuelInfo
+from .models import CarInfo, RefuelInfo, FuelInfo, RankingList, ExpenditureInfo
 from .serializers import CarInfoSerializer, RefuelInfoSerializer, ExpenditureInfoSerializer, FuelInfoSerializer
+from .serializers import RankingListSerializer
 import json
 import requests
 import traceback
@@ -282,8 +283,8 @@ class FuelCalculationView(APIView):
                 time = i.get('time')
 
                 # 上一次有记录
-                if is_norecord == 0 and RefuelInfo.objects.filter(time__lt=time).count() > 0:
-                    last = RefuelInfo.objects.filter(time__lt=time).order_by('-time')[0]
+                if is_norecord == 0 and RefuelInfo.objects.filter(time__lt=time, car_id=car_id).count() > 0:
+                    last = RefuelInfo.objects.filter(time__lt=time, car_id=car_id).order_by('-time')[0]
                     last_mileages = last.mileages
                     l = float(fuel_counts) * 100
                     km = int(mileages) - int(last_mileages)
@@ -302,6 +303,8 @@ class FuelCalculationView(APIView):
                         f.driving_km = km
                         f.mileages = mileages
                         f.time = time
+                        f.driving_moneys = y
+                        f.driving_fuel_counts = fuel_counts
                         f.save()
                     else:
                         FuelInfo.objects.create(id_id=id, car_id_id=car_id, time=time, fuel_l_km=fuel_l_km,
@@ -320,12 +323,11 @@ class FuelCalculationView(APIView):
                         f.save()
                     else:
                         FuelInfo.objects.create(id_id=id, car_id_id=car_id, time=time, fuel_l_km=last_mileages,
-                                                fuel_y_km=last_mileages, mileages=mileages, driving_km=last_mileages,
-                                                driving_moneys=last_mileages, driving_fuel_counts=last_mileages)
+                                                fuel_y_km=last_mileages, mileages=mileages, driving_km=km,
+                                                driving_moneys=moneys, driving_fuel_counts=fuel_counts)
 
             all_fuelinfo = FuelInfo.objects.filter(car_id_id=car_id)
             sers = FuelInfoSerializer(all_fuelinfo, many=True)
-            print(sers)
             return http_response(data={"all_fuelinfo": sers.data})
         except KeyError:
             return http_response(error_no=1, info="input error")
@@ -334,3 +336,161 @@ class FuelCalculationView(APIView):
             return http_response(error_no=2, info="cmx exception")
 
 
+# 排行榜
+class RankingListView(APIView):
+    def get(self, request):
+        try:
+            username = request.query_params.get("username")
+            car_id = request.query_params.get('car_id')
+            if not is_user_exist(username):
+                return http_response(error_no=42, info="No User")
+            all_fuelinfo = FuelInfo.objects.filter(car_id=car_id)
+            if all_fuelinfo.count() < 1:
+                return http_response(error_no=42, info="No car_id")
+            sers = FuelInfoSerializer(all_fuelinfo, many=True)
+            # 取出油耗记录
+            list_time = []
+            list_fuel_l_km = []
+            list_fuel_y_km = []
+            list_mileages = []
+            list_driving_km = []
+            list_driving_moneys = []
+            list_driving_fuel_counts = []
+            for i in sers.data:
+                fuel_l_km = i.get('fuel_l_km')
+                if fuel_l_km == ('???' or '?'):
+                    continue
+                time = i.get('time')
+                fuel_y_km = i.get('fuel_y_km')
+                mileages = i.get('mileages')
+                driving_km = i.get('driving_km')
+                driving_moneys = i.get('driving_moneys')
+                driving_fuel_counts = i.get('driving_fuel_counts')
+                list_time.append(time)
+                list_fuel_l_km.append(float(fuel_l_km))
+                list_fuel_y_km.append(float(fuel_y_km))
+                list_mileages.append(int(mileages))
+                list_driving_km.append(int(driving_km))
+                list_driving_moneys.append(float(driving_moneys))
+                list_driving_fuel_counts.append(float(driving_fuel_counts))
+            average_fuel_l_km = sum(list_fuel_l_km) / len(list_fuel_l_km)
+            average_fuel_y_km = sum(list_fuel_y_km) / len(list_fuel_y_km)
+            km = max(list_mileages)
+            sum_km = sum(list_driving_km)
+            sum_moneys = sum(list_driving_moneys)
+            sum_fuel_counts = sum(list_driving_fuel_counts)
+            if RankingList.objects.filter(car_id=car_id).count() > 0:
+                rank = RankingList.objects.get(car_id=car_id)
+                rank.average_fuel_l_km = average_fuel_l_km
+                rank.average_fuel_y_km = average_fuel_y_km
+                rank.km = rank.km
+                rank.sum_km = sum_km
+                rank.sum_moneys = sum_moneys
+                rank.sum_fuel_counts = sum_fuel_counts
+                rank.save()
+                # sers = RankingListSerializer(rank)
+                # return http_response(data={"ranklist": sers.data})
+            else:
+                wi = {"average_fuel_l_km": average_fuel_l_km, "average_fuel_y_km": average_fuel_y_km, "km": km,
+                      "sum_km": sum_km, "sum_moneys": sum_moneys, "sum_fuel_counts": sum_fuel_counts,
+                      "car_id": car_id, "username": username}
+                sers = RankingListSerializer(data=wi)
+                if sers.is_valid():
+                    sers.save()
+                #     return http_response(data={"ranklist": sers.data})
+                # return http_response(error_no=8, info="other error ")
+            all = RankingList.objects.all()
+            all_rank = RankingListSerializer(all, many=True)
+            return http_response(data={"ranklist": all_rank.data})
+        except KeyError:
+            return http_response(error_no=1, info="input error")
+        except:
+            traceback.print_exc()
+            return http_response(error_no=2, info="cmx exception")
+
+
+# 支出费用
+class ExpenditureInfoView(APIView):
+    def post(self, request):
+        try:
+            username = request.data.get('username')
+            if not is_user_exist(username):
+                return http_response(error_no=42, info="No User")
+            car_id = request.data.get('car_id')
+            if CarInfo.objects.filter(car_id=car_id, username_id=username).count() < 1:
+                return http_response(error_no=12, info="car_id not exist")
+            remark = request.data.get('remark')
+            moneys = request.data.get('moneys')
+            time = request.data.get('time')
+            info = request.data.get('info')
+            wi = {"car_id": car_id, "moneys": moneys, "remark": remark, "time": time, "info": info}
+            ser = ExpenditureInfoSerializer(data=wi)
+            if ser.is_valid():
+                ser.save()
+                return http_response()
+            return http_response(error_no=8, info="other error ")
+        except KeyError:
+            return http_response(error_no=1, info="input error")
+        except ZeroDivisionError:
+            return http_response(error_no=1, info="integer division or modulo by zero")
+        except:
+            traceback.print_exc()
+            return http_response(error_no=2, info="cmx exception")
+
+    def get(self, request):
+        try:
+            username = request.query_params.get('username')
+            car_id = request.query_params.get('car_id')
+            if not is_user_exist(username):
+                return http_response(error_no=42, info="No User")
+            refuelinfo = ExpenditureInfo.objects.filter(car_id=car_id)
+            sers = ExpenditureInfoSerializer(refuelinfo, many=True)
+            return http_response(data={"refuelinfo_list": sers.data})
+        except KeyError:
+            return http_response(error_no=1, info="input error")
+        except:
+            traceback.print_exc()
+            return http_response(error_no=2, info="cmx exception")
+
+    def put(self, request):
+        try:
+            username = request.data.get('username')
+            if not is_user_exist(username):
+                return http_response(error_no=42, info="No User")
+            car_id = request.data.get('car_id')
+            id = request.data.get('id')
+            if ExpenditureInfo.objects.filter(car_id=car_id, id=id).count() < 1:
+                return http_response(error_no=13, info="ExpenditureInfo not exist")
+            moneys = request.data.get('moneys')
+            remark = request.data.get('remark')
+            time = request.data.get('time')
+            info = request.data.get('info')
+            Einfo = ExpenditureInfo.objects.get(car_id=car_id, id=id)
+            Einfo.moneys = moneys
+            Einfo.info = info
+            Einfo.time = time
+            Einfo.remark = remark
+            Einfo.save()
+            return http_response()
+        except KeyError:
+            return http_response(error_no=1, info="input error")
+        except:
+            traceback.print_exc()
+            return http_response(error_no=2, info="cmx exception")
+
+    def delete(self, request):
+        try:
+            username = request.data.get('username')
+            if not is_user_exist(username):
+                return http_response(error_no=42, info="No User")
+            car_id = request.data.get('car_id')
+            id = request.data.get('id')
+            if ExpenditureInfo.objects.filter(car_id=car_id, id=id).count() < 1:
+                return http_response(error_no=13, info="ExpenditureInfo not exist")
+            ExpenditureInfo.objects.get(car_id=car_id, id=id).delete()
+            return http_response()
+        except KeyError:
+            return http_response(error_no=1, info="input error")
+        except:
+            traceback.print_exc()
+            return http_response(error_no=2, info="cmx exception")

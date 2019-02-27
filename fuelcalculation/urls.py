@@ -5,8 +5,8 @@ __date__ = "2019/02/14 10:28"
 from django.conf.urls import url
 from .userviews import LoginViewSet, RegisterViewSet, ForgetPasswordViewSet, LogoutViewSet, UserInfoViewSet
 from .userviews import CheckUserView
-from .views import SendCodeView, SetCarInfoView, RefuelInfoView, FuelCalculationView
-
+from .views import SendCodeView, SetCarInfoView, RefuelInfoView, FuelCalculationView, RankingListView
+from .views import ExpenditureInfoView
 
 
 urlpatterns = [
@@ -20,5 +20,7 @@ urlpatterns = [
     url(r'^setCarInfo/$', SetCarInfoView.as_view()),
     url(r'^reFuelInfo/$', RefuelInfoView.as_view()),
     url(r'^getFuelCal/$', FuelCalculationView.as_view()),
+    url(r'^getRankList/$', RankingListView.as_view()),
+    url(r'^expense/$', ExpenditureInfoView.as_view()),
 
 ]
