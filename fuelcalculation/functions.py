@@ -6,6 +6,7 @@ __date__ = "2019/02/14 14:59"
 from .models import *
 from rest_framework.response import Response
 from rest_framework import status
+from .serializers import ExpenditureInfoSerializer
 import random
 
 
@@ -46,3 +47,13 @@ def random_str(randomlength=4):
     for i in range(randomlength):
         str += chars[random.randint(0, length)]
     return str
+
+
+# 记录加油费用
+def refuel_moneys(car_id, moneys, remark, time, info):
+    wi = {"car_id": car_id, "moneys": moneys, "remark": remark, "time": time, "info": info}
+    ser = ExpenditureInfoSerializer(data=wi)
+    if ser.is_valid():
+        ser.save()
+        return True
+    return False
