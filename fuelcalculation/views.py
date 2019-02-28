@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from rest_framework.views import APIView
-from .functions import random_str, http_response, is_user_exist
+from .functions import random_str, http_response, is_user_exist, refuel_moneys
 from .models import CarInfo, RefuelInfo, FuelInfo, RankingList, ExpenditureInfo
 from .serializers import CarInfoSerializer, RefuelInfoSerializer, ExpenditureInfoSerializer, FuelInfoSerializer
 from .serializers import RankingListSerializer
@@ -157,31 +157,10 @@ class RefuelInfoView(APIView):
             # print(ser)
             if ser.is_valid():
                 ser.save()
-                # # 上一次有记录
-                # id = ser.data.values()[0]
-                # if is_norecord == "0" and RefuelInfo.objects.filter(time__lt=time).count() > 0:
-                #     last = RefuelInfo.objects.filter(time__lt=time).order_by('-time')[0]
-                #     last_mileages = last.mileages
-                #     print(last_mileages)
-                #     l = float(fuel_counts) * 100
-                #     km = int(mileages) - int(last_mileages)
-                #     if km <= 0:
-                #         return http_response(error_no=5, info="km error")
-                #     y = float(moneys)
-                #     fuel_l_km = float("%.2f" % (l / km))
-                #     print("fuel_l_km:", fuel_l_km)
-                #     fuel_y_km = float("%.2f" % (y / km))
-                #     print("fuel_y_km", fuel_y_km)
-                #     FuelInfo.objects.create(id_id=id, car_id_id=car_id, time=time, fuel_l_km=fuel_l_km,
-                #                             fuel_y_km=fuel_y_km, mileages=mileages, driving_km=km,
-                #                             driving_moneys=moneys, driving_fuel_counts=fuel_counts)
-                # # 上一次没有记录
-                # else:
-                #     FuelInfo.objects.create(id_id=id, car_id_id=car_id, time=time, fuel_l_km="???",
-                #                             fuel_y_km="???", mileages=mileages, driving_km="???",
-                #                             driving_moneys="???", driving_fuel_counts="???")
-                return http_response()
-            return http_response(error_no=8, info="other error ")
+                if refuel_moneys(car_id, moneys, remark, time, "加油"):
+                    return http_response()
+                return http_response(info="refuel_moneys error")
+            return http_response(error_no=8, info="sers error ")
         except KeyError:
             return http_response(error_no=1, info="input error")
         except ZeroDivisionError:
@@ -399,7 +378,7 @@ class RankingListView(APIView):
                     sers.save()
                 #     return http_response(data={"ranklist": sers.data})
                 # return http_response(error_no=8, info="other error ")
-            all = RankingList.objects.all()
+            all = RankingList.objects.all().order_by('average_fuel_l_km')[:10]
             all_rank = RankingListSerializer(all, many=True)
             return http_response(data={"ranklist": all_rank.data})
         except KeyError:
@@ -423,11 +402,12 @@ class ExpenditureInfoView(APIView):
             moneys = request.data.get('moneys')
             time = request.data.get('time')
             info = request.data.get('info')
-            wi = {"car_id": car_id, "moneys": moneys, "remark": remark, "time": time, "info": info}
-            ser = ExpenditureInfoSerializer(data=wi)
-            if ser.is_valid():
-                ser.save()
+            if refuel_moneys(car_id, moneys, remark, time, info):
                 return http_response()
+            # wi = {"car_id": car_id, "moneys": moneys, "remark": remark, "time": time, "info": info}
+            # ser = ExpenditureInfoSerializer(data=wi)
+            # if ser.is_valid():
+            #     ser.save()
             return http_response(error_no=8, info="other error ")
         except KeyError:
             return http_response(error_no=1, info="input error")
