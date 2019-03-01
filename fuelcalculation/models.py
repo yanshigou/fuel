@@ -21,7 +21,7 @@ class UserProfile(AbstractUser):
 # 车辆信息表
 class CarInfo(models.Model):
     username = models.ForeignKey(UserProfile, to_field="username", verbose_name=u'用户')
-    car_id = models.CharField(max_length=20, unique=True, verbose_name=u'车牌号码')
+    car_id = models.CharField(max_length=20, unique=True, verbose_name=u'车牌号')
     car_brand = models.CharField(max_length=10, null=True, blank=True, verbose_name=u'汽车品牌')
     car_name = models.CharField(max_length=10, default=u'我的小车', verbose_name=u'汽车昵称')
     car_series = models.CharField(max_length=10, null=True, blank=True, verbose_name=u'车系')
@@ -64,7 +64,7 @@ class FuelInfo(models.Model):
 
 # 支出费用详情表
 class ExpenditureInfo(models.Model):
-    car_id = models.ForeignKey(CarInfo, to_field='car_id', verbose_name='ID')
+    car_id = models.ForeignKey(CarInfo, to_field='car_id', verbose_name='车牌号')
     time = models.DateTimeField(verbose_name=u'时间')
     remark = models.CharField(max_length=50, null=True, blank=True, verbose_name=u'备注')
     moneys = models.CharField(max_length=10, verbose_name=u'金额/元')
@@ -81,3 +81,13 @@ class RankingList(models.Model):
     sum_km = models.CharField(max_length=10, verbose_name=u'总记录里程/公里')
     sum_moneys = models.CharField(max_length=10, verbose_name=u'总花费金额/元')
     sum_fuel_counts = models.CharField(max_length=10, verbose_name=u'总加了油量/升')
+
+
+# 车辆保养信息记录
+class CarCareInfo(models.Model):
+    car_id = models.ForeignKey(CarInfo, to_field='car_id', verbose_name='车牌号')
+    time = models.DateTimeField(verbose_name=u'保养时间')
+    km = models.CharField(max_length=10, verbose_name=u'保养时总里程/公里')
+    care_type = models.CharField(max_length=20, default=u'常规保养', verbose_name=u'保养类型')
+    next_time = models.DateTimeField(verbose_name=u'预计下一次保养时间')
+    next_km = models.CharField(max_length=10, verbose_name=u'预计下一次保养总里程/公里')

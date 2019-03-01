@@ -1,4 +1,4 @@
-from .models import CarInfo, RefuelInfo, FuelInfo, ExpenditureInfo, RankingList
+from .models import CarInfo, RefuelInfo, FuelInfo, ExpenditureInfo, RankingList, CarCareInfo
 from rest_framework import serializers
 
 
@@ -29,4 +29,10 @@ class ExpenditureInfoSerializer(serializers.ModelSerializer):
 class RankingListSerializer(serializers.ModelSerializer):
     class Meta:
         model = RankingList
+        fields = '__all__'
+
+
+class CarCareInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CarCareInfo
         fields = '__all__'

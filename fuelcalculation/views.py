@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from rest_framework.views import APIView
 from .functions import random_str, http_response, is_user_exist, refuel_moneys
-from .models import CarInfo, RefuelInfo, FuelInfo, RankingList, ExpenditureInfo
+from .models import CarInfo, RefuelInfo, FuelInfo, RankingList, ExpenditureInfo, CarCareInfo
 from .serializers import CarInfoSerializer, RefuelInfoSerializer, ExpenditureInfoSerializer, FuelInfoSerializer
 from .serializers import RankingListSerializer
 import json
@@ -390,6 +390,94 @@ class RankingListView(APIView):
 
 # 支出费用
 class ExpenditureInfoView(APIView):
+    def post(self, request):
+        try:
+            username = request.data.get('username')
+            if not is_user_exist(username):
+                return http_response(error_no=42, info="No User")
+            car_id = request.data.get('car_id')
+            if CarInfo.objects.filter(car_id=car_id, username_id=username).count() < 1:
+                return http_response(error_no=12, info="car_id not exist")
+            remark = request.data.get('remark')
+            moneys = request.data.get('moneys')
+            time = request.data.get('time')
+            info = request.data.get('info')
+            if refuel_moneys(car_id, moneys, remark, time, info):
+                return http_response()
+            # wi = {"car_id": car_id, "moneys": moneys, "remark": remark, "time": time, "info": info}
+            # ser = ExpenditureInfoSerializer(data=wi)
+            # if ser.is_valid():
+            #     ser.save()
+            return http_response(error_no=8, info="other error ")
+        except KeyError:
+            return http_response(error_no=1, info="input error")
+        except ZeroDivisionError:
+            return http_response(error_no=1, info="integer division or modulo by zero")
+        except:
+            traceback.print_exc()
+            return http_response(error_no=2, info="cmx exception")
+
+    def get(self, request):
+        try:
+            username = request.query_params.get('username')
+            car_id = request.query_params.get('car_id')
+            if not is_user_exist(username):
+                return http_response(error_no=42, info="No User")
+            refuelinfo = ExpenditureInfo.objects.filter(car_id=car_id)
+            sers = ExpenditureInfoSerializer(refuelinfo, many=True)
+            return http_response(data={"refuelinfo_list": sers.data})
+        except KeyError:
+            return http_response(error_no=1, info="input error")
+        except:
+            traceback.print_exc()
+            return http_response(error_no=2, info="cmx exception")
+
+    def put(self, request):
+        try:
+            username = request.data.get('username')
+            if not is_user_exist(username):
+                return http_response(error_no=42, info="No User")
+            car_id = request.data.get('car_id')
+            id = request.data.get('id')
+            if ExpenditureInfo.objects.filter(car_id=car_id, id=id).count() < 1:
+                return http_response(error_no=13, info="ExpenditureInfo not exist")
+            moneys = request.data.get('moneys')
+            remark = request.data.get('remark')
+            time = request.data.get('time')
+            info = request.data.get('info')
+            Einfo = ExpenditureInfo.objects.get(car_id=car_id, id=id)
+            Einfo.moneys = moneys
+            Einfo.info = info
+            Einfo.time = time
+            Einfo.remark = remark
+            Einfo.save()
+            return http_response()
+        except KeyError:
+            return http_response(error_no=1, info="input error")
+        except:
+            traceback.print_exc()
+            return http_response(error_no=2, info="cmx exception")
+
+    def delete(self, request):
+        try:
+            username = request.data.get('username')
+            if not is_user_exist(username):
+                return http_response(error_no=42, info="No User")
+            car_id = request.data.get('car_id')
+            id = request.data.get('id')
+            if ExpenditureInfo.objects.filter(car_id=car_id, id=id).count() < 1:
+                return http_response(error_no=13, info="ExpenditureInfo not exist")
+            ExpenditureInfo.objects.get(car_id=car_id, id=id).delete()
+            return http_response()
+        except KeyError:
+            return http_response(error_no=1, info="input error")
+        except:
+            traceback.print_exc()
+            return http_response(error_no=2, info="cmx exception")
+
+
+# 保养记录
+class CarCareInfoView(APIView):
     def post(self, request):
         try:
             username = request.data.get('username')
