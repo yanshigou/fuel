@@ -486,16 +486,16 @@ class CarCareInfoView(APIView):
             car_id = request.data.get('car_id')
             if CarInfo.objects.filter(car_id=car_id, username_id=username).count() < 1:
                 return http_response(error_no=12, info="car_id not exist")
-            remark = request.data.get('remark')
+            time = str(request.data.get('time'))
+            km = str(request.data.get('km'))
+            care_type = request.data.get('care_type')
             moneys = request.data.get('moneys')
-            time = request.data.get('time')
-            info = request.data.get('info')
-            if refuel_moneys(car_id, moneys, remark, time, info):
+            remark = request.data.get('remark')
+            # 判断保养类型 下一次保养时间和公里对应加上
+            if care_type == '基本保养':
+                pass
+            if refuel_moneys(car_id, moneys, remark, time, care_type):
                 return http_response()
-            # wi = {"car_id": car_id, "moneys": moneys, "remark": remark, "time": time, "info": info}
-            # ser = ExpenditureInfoSerializer(data=wi)
-            # if ser.is_valid():
-            #     ser.save()
             return http_response(error_no=8, info="other error ")
         except KeyError:
             return http_response(error_no=1, info="input error")

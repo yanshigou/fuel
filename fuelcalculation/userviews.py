@@ -132,7 +132,7 @@ class UserInfoViewSet(APIView):
                 return http_response(error_no=42, info="No User")
             user = UserProfile.objects.get(username=username)
             user.nickname = request.data.get("nickname")
-            user.mobile = request.data.get("sex")
+            user.sex = request.data.get("sex")
             temphead = request.FILES.get("image")
             if temphead is not None:
                 user.image = temphead

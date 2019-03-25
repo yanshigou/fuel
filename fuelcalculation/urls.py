@@ -6,7 +6,7 @@ from django.conf.urls import url
 from .userviews import LoginViewSet, RegisterViewSet, ForgetPasswordViewSet, LogoutViewSet, UserInfoViewSet
 from .userviews import CheckUserView
 from .views import SendCodeView, SetCarInfoView, RefuelInfoView, FuelCalculationView, RankingListView
-from .views import ExpenditureInfoView
+from .views import ExpenditureInfoView, CarCareInfoView
 
 
 urlpatterns = [
@@ -22,5 +22,6 @@ urlpatterns = [
     url(r'^getFuelCal/$', FuelCalculationView.as_view()),
     url(r'^getRankList/$', RankingListView.as_view()),
     url(r'^expense/$', ExpenditureInfoView.as_view()),
+    url(r'^carCare/$', CarCareInfoView.as_view()),
 
 ]
