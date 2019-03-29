@@ -5,11 +5,11 @@ from rest_framework.views import APIView
 from .functions import random_str, http_response, is_user_exist, refuel_moneys
 from .models import CarInfo, RefuelInfo, FuelInfo, RankingList, ExpenditureInfo, CarCareInfo
 from .serializers import CarInfoSerializer, RefuelInfoSerializer, ExpenditureInfoSerializer, FuelInfoSerializer
-from .serializers import RankingListSerializer
+from .serializers import RankingListSerializer, CarCareInfoSerializer
 import json
 import requests
 import traceback
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 # 发送手机验证码
@@ -492,10 +492,32 @@ class CarCareInfoView(APIView):
             moneys = request.data.get('moneys')
             remark = request.data.get('remark')
             # 判断保养类型 下一次保养时间和公里对应加上
-            if care_type == '基本保养':
-                pass
+            if CarCareInfo.objects.filter(car_id_id=car_id, time=time, care_type=care_type):
+                return http_response(error_no=10, info="already exist")
+            if care_type == 0:
+                days = 182
+                next_km = int(km) + 5000
+                next_time = datetime.strptime(time, '%Y-%m-%d %H:%M') + timedelta(days=days)
+                CarCareInfo.objects.create(car_id_id=car_id, time=time, km=km, care_type=care_type, next_km=next_km,
+                                           next_time=next_time, remark=remark)
+            elif care_type == 1:
+                days = 2 * 365
+                next_km = int(km) + 40000
+                next_time = datetime.strptime(time, '%Y-%m-%d %H:%M') + timedelta(days=days)
+                CarCareInfo.objects.create(car_id_id=car_id, time=time, km=km, care_type=care_type, next_km=next_km,
+                                           next_time=next_time, remark=remark)
+            elif care_type == 2:
+                days = 5 * 365
+                next_km = int(km) + 100000
+                next_time = datetime.strptime(time, '%Y-%m-%d %H:%M') + timedelta(days=days)
+                CarCareInfo.objects.create(car_id_id=car_id, time=time, km=km, care_type=care_type, next_km=next_km,
+                                           next_time=next_time, remark=remark)
+            else:
+                return http_response(error_no=9, info='type error')
             if refuel_moneys(car_id, moneys, remark, time, care_type):
-                return http_response()
+                carCareInfo = CarCareInfo.objects.get(car_id_id=car_id, time=time, care_type=care_type)
+                sers = CarCareInfoSerializer(carCareInfo)
+                return http_response(data={"data": sers.data})
             return http_response(error_no=8, info="other error ")
         except KeyError:
             return http_response(error_no=1, info="input error")
@@ -511,9 +533,9 @@ class CarCareInfoView(APIView):
             car_id = request.query_params.get('car_id')
             if not is_user_exist(username):
                 return http_response(error_no=42, info="No User")
-            refuelinfo = ExpenditureInfo.objects.filter(car_id=car_id)
-            sers = ExpenditureInfoSerializer(refuelinfo, many=True)
-            return http_response(data={"refuelinfo_list": sers.data})
+            carCareInfo = CarCareInfo.objects.filter(car_id_id=car_id)
+            sers = CarCareInfoSerializer(carCareInfo, many=True)
+            return http_response(data={"data": sers.data})
         except KeyError:
             return http_response(error_no=1, info="input error")
         except:
@@ -527,18 +549,22 @@ class CarCareInfoView(APIView):
                 return http_response(error_no=42, info="No User")
             car_id = request.data.get('car_id')
             id = request.data.get('id')
-            if ExpenditureInfo.objects.filter(car_id=car_id, id=id).count() < 1:
-                return http_response(error_no=13, info="ExpenditureInfo not exist")
-            moneys = request.data.get('moneys')
-            remark = request.data.get('remark')
+            if CarCareInfo.objects.filter(car_id_id=car_id, id=id).count() < 1:
+                return http_response(error_no=13, info="CarCareInfo not exist")
             time = request.data.get('time')
-            info = request.data.get('info')
-            Einfo = ExpenditureInfo.objects.get(car_id=car_id, id=id)
-            Einfo.moneys = moneys
-            Einfo.info = info
-            Einfo.time = time
-            Einfo.remark = remark
-            Einfo.save()
+            km = request.data.get('km')
+            care_type = request.data.get('care_type')
+            next_time = request.data.get('next_time')
+            next_km = request.data.get('next_km')
+            remark = request.data.get('remark')
+            info = CarCareInfo.objects.get(car_id=car_id, id=id)
+            info.time = time
+            info.km = km
+            info.care_type = care_type
+            info.next_time = next_time
+            info.next_km = next_km
+            info.remark = remark
+            info.save()
             return http_response()
         except KeyError:
             return http_response(error_no=1, info="input error")
@@ -553,9 +579,9 @@ class CarCareInfoView(APIView):
                 return http_response(error_no=42, info="No User")
             car_id = request.data.get('car_id')
             id = request.data.get('id')
-            if ExpenditureInfo.objects.filter(car_id=car_id, id=id).count() < 1:
-                return http_response(error_no=13, info="ExpenditureInfo not exist")
-            ExpenditureInfo.objects.get(car_id=car_id, id=id).delete()
+            if CarCareInfo.objects.filter(car_id_id=car_id, id=id).count() < 1:
+                return http_response(error_no=13, info="CarCareInfo not exist")
+            CarCareInfo.objects.get(car_id=car_id, id=id).delete()
             return http_response()
         except KeyError:
             return http_response(error_no=1, info="input error")
