@@ -85,9 +85,15 @@ class RankingList(models.Model):
 
 # 车辆保养信息记录
 class CarCareInfo(models.Model):
+    caretype = (
+        (0, '常规保养'),
+        (1, '定期保养'),
+        (2, '大保养'),
+    )
     car_id = models.ForeignKey(CarInfo, to_field='car_id', verbose_name='车牌号')
     time = models.DateTimeField(verbose_name=u'保养时间')
     km = models.CharField(max_length=10, verbose_name=u'保养时总里程/公里')
-    care_type = models.CharField(max_length=20, default=u'常规保养', verbose_name=u'保养类型')
+    care_type = models.IntegerField(default=0, verbose_name=u'保养类型', choices=caretype)
     next_time = models.DateTimeField(verbose_name=u'预计下一次保养时间')
     next_km = models.CharField(max_length=10, verbose_name=u'预计下一次保养总里程/公里')
+    remark = models.CharField(max_length=50, null=True, blank=True, verbose_name=u'备注')
