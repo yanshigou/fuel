@@ -97,3 +97,44 @@ class CarCareInfo(models.Model):
     next_time = models.DateTimeField(verbose_name=u'预计下一次保养时间')
     next_km = models.CharField(max_length=10, verbose_name=u'预计下一次保养总里程/公里')
     remark = models.CharField(max_length=50, null=True, blank=True, verbose_name=u'备注')
+
+
+# 订单信息表
+class OrderInfo(models.Model):
+    pay_type = (
+        (1, '微信'),
+        (2, '支付宝')
+    )
+    pay_status = (
+        (0, '未支付'),
+        (1, '已支付'),
+        (-1, '已关闭')
+    )
+    ordernum = models.CharField(max_length=40, default="", verbose_name='商家订单号')
+    ordertime = models.DateTimeField(verbose_name='创建时间')
+    orderuser = models.ForeignKey(UserProfile, to_field="username", verbose_name='用户')
+    ordermoney = models.FloatField(verbose_name='金额/分')
+    order_paytype = models.IntegerField(default=1, choices=pay_type, verbose_name='支付方式')  # 1--微信 2--支付宝
+    order_paynum = models.CharField(max_length=40, default="", verbose_name='平台订单号')
+    orderstatus = models.IntegerField(default=0, choices=pay_status, verbose_name='订单状态')
+
+    class Meta:
+        verbose_name = "订单信息表"
+        verbose_name_plural = "订单信息表"
+
+
+# 车辆品牌表
+class CarBrandInfo(models.Model):
+    car_brand = models.CharField(max_length=10, unique=True, verbose_name=u'汽车品牌')
+
+
+# 车辆车系表
+class CarSeriesInfo(models.Model):
+    car_brand = models.ForeignKey(CarBrandInfo, to_field='car_brand', verbose_name=u'汽车品牌')
+    car_series = models.CharField(max_length=10, unique=True, verbose_name=u'车系')
+
+
+# 车辆车型表
+class CarModelInfo(models.Model):
+    car_series = models.ForeignKey(CarSeriesInfo, to_field='car_series', verbose_name=u'车系')
+    car_model = models.CharField(max_length=20, verbose_name=u'车型')
