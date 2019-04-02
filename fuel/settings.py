@@ -38,7 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'fuelcalculation',
-    'rest_framework'
+    'rest_framework',
+    'alipay',
+    'xadmin'
 ]
 AUTH_USER_MODEL = 'fuelcalculation.UserProfile'
 MIDDLEWARE = [
