@@ -27,26 +27,59 @@ class CarInfo(models.Model):
     car_series = models.CharField(max_length=10, null=True, blank=True, verbose_name=u'车系')
     car_model = models.CharField(max_length=20, null=True, blank=True, verbose_name=u'车型')
 
+    class Meta:
+        verbose_name = "车辆信息表"
+        verbose_name_plural = "车辆信息表"
+
+    def __unicode__(self):
+        return self.car_id
+
 
 # 燃料类型表
 class FuelType(models.Model):
     fuel_type = models.CharField(max_length=10, default=u'未指定燃料类型', unique=True, verbose_name=u'燃料类型')
 
+    class Meta:
+        verbose_name = "燃料类型表"
+        verbose_name_plural = "燃料类型表"
+
+    def __unicode__(self):
+        return self.fuel_type
+
 
 # 加油记录表
 class RefuelInfo(models.Model):
+    isfull = (
+        (0, '未加满'),
+        (1, '已加满')
+    )
+    islight = (
+        (0, '油灯未亮'),
+        (1, '油灯已亮')
+    )
+    isnorecord = (
+        (0, '上一次有记录'),
+        (1, '上一次没有记录')
+    )
     car_id = models.ForeignKey(CarInfo, to_field='car_id', verbose_name='车牌号')
     fuel_type = models.ForeignKey(FuelType, to_field="fuel_type", verbose_name=u'燃料类型')
     time = models.DateTimeField(verbose_name=u'加油时间')
-    is_full = models.IntegerField(default=1, verbose_name=u'是否加满')
-    is_light = models.IntegerField(default=0, verbose_name=u'是否亮油灯')
-    is_norecord = models.IntegerField(default=0, verbose_name=u'上一次没有记录')
+    is_full = models.IntegerField(default=1, verbose_name=u'是否加满', choices=isfull)
+    is_light = models.IntegerField(default=0, verbose_name=u'是否亮油灯', choices=islight)
+    is_norecord = models.IntegerField(default=0, verbose_name=u'上一次没有记录', choices=isnorecord)
     mileages = models.CharField(max_length=10, verbose_name=u'里程碑总数/公里')
     prices = models.CharField(max_length=10, verbose_name=u'单价/元')
     moneys = models.CharField(max_length=10, verbose_name=u'总金额/元')
     fuel_counts = models.CharField(max_length=10, verbose_name=u'油量/升')
     fuel_station = models.CharField(max_length=20, null=True, blank=True, verbose_name=u'加油站')
     remark = models.CharField(max_length=50, null=True, blank=True, verbose_name=u'备注')
+
+    class Meta:
+        verbose_name = "加油记录表"
+        verbose_name_plural = "加油记录表"
+
+    def __unicode__(self):
+        return self.car_id
 
 
 # 油耗记录表
@@ -61,6 +94,10 @@ class FuelInfo(models.Model):
     driving_moneys = models.CharField(max_length=10, verbose_name=u'本次行驶金额/元')
     driving_fuel_counts = models.CharField(max_length=10, verbose_name=u'本次行驶使用油量/升')
 
+    class Meta:
+        verbose_name = "油耗记录表"
+        verbose_name_plural = "油耗记录表"
+
 
 # 支出费用详情表
 class ExpenditureInfo(models.Model):
@@ -69,6 +106,10 @@ class ExpenditureInfo(models.Model):
     remark = models.CharField(max_length=50, null=True, blank=True, verbose_name=u'备注')
     moneys = models.CharField(max_length=10, verbose_name=u'金额/元')
     info = models.CharField(max_length=10, verbose_name=u'用途')
+
+    class Meta:
+        verbose_name = "支出费用详情表"
+        verbose_name_plural = "支出费用详情表"
 
 
 # 排行列表
@@ -81,6 +122,10 @@ class RankingList(models.Model):
     sum_km = models.CharField(max_length=10, verbose_name=u'总记录里程/公里')
     sum_moneys = models.CharField(max_length=10, verbose_name=u'总花费金额/元')
     sum_fuel_counts = models.CharField(max_length=10, verbose_name=u'总加了油量/升')
+
+    class Meta:
+        verbose_name = "排行列表"
+        verbose_name_plural = "排行列表"
 
 
 # 车辆保养信息记录
@@ -97,6 +142,10 @@ class CarCareInfo(models.Model):
     next_time = models.DateTimeField(verbose_name=u'预计下一次保养时间')
     next_km = models.CharField(max_length=10, verbose_name=u'预计下一次保养总里程/公里')
     remark = models.CharField(max_length=50, null=True, blank=True, verbose_name=u'备注')
+
+    class Meta:
+        verbose_name = "车辆保养信息记录"
+        verbose_name_plural = "车辆保养信息记录"
 
 
 # 订单信息表
@@ -127,14 +176,32 @@ class OrderInfo(models.Model):
 class CarBrandInfo(models.Model):
     car_brand = models.CharField(max_length=10, unique=True, verbose_name=u'汽车品牌')
 
+    class Meta:
+        verbose_name = "车辆品牌表"
+        verbose_name_plural = "车辆品牌表"
+
+    def __unicode__(self):
+        return self.car_brand
+
 
 # 车辆车系表
 class CarSeriesInfo(models.Model):
     car_brand = models.ForeignKey(CarBrandInfo, to_field='car_brand', verbose_name=u'汽车品牌')
     car_series = models.CharField(max_length=10, unique=True, verbose_name=u'车系')
 
+    class Meta:
+        verbose_name = "车辆车系表"
+        verbose_name_plural = "车辆车系表"
+
+    def __unicode__(self):
+        return self.car_series
+
 
 # 车辆车型表
 class CarModelInfo(models.Model):
     car_series = models.ForeignKey(CarSeriesInfo, to_field='car_series', verbose_name=u'车系')
     car_model = models.CharField(max_length=20, verbose_name=u'车型')
+
+    class Meta:
+        verbose_name = "车辆车型表"
+        verbose_name_plural = "车辆车型表"
