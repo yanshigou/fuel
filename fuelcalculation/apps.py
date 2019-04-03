@@ -6,3 +6,4 @@ from django.apps import AppConfig
 
 class FuelcalculationConfig(AppConfig):
     name = 'fuelcalculation'
+    verbose_name = '系统管理'

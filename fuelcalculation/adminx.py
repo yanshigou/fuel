@@ -38,7 +38,7 @@ class RefuelInfoAdmin(object):
 
 
 class FuelInfoAdmin(object):
-    list_display = ['id', 'car_id', 'time', 'fuel_l_km', 'fuel_y_km', 'mileages', 'driving_km', 'driving_moneys',
+    list_display = ['car_id', 'time', 'fuel_l_km', 'fuel_y_km', 'mileages', 'driving_km', 'driving_moneys',
                     'driving_fuel_counts']
 
 
