@@ -4,5 +4,4 @@
 *.pyc
 00*
 fabfile.py
-other/
 *.gz
