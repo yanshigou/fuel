@@ -18,7 +18,43 @@ class UserProfile(AbstractUser):
         verbose_name_plural = "用户信息表"
 
 
+# 车辆品牌表
+class CarBrandInfo(models.Model):
+    car_brand = models.CharField(max_length=10, unique=True, verbose_name=u'汽车品牌')
+
+    class Meta:
+        verbose_name = "车辆品牌表"
+        verbose_name_plural = "车辆品牌表"
+
+    def __unicode__(self):
+        return self.car_brand
+
+
+# 车辆车系表
+class CarSeriesInfo(models.Model):
+    car_brand = models.ForeignKey(CarBrandInfo, to_field='car_brand', verbose_name=u'汽车品牌')
+    car_series = models.CharField(max_length=10, unique=True, verbose_name=u'车系')
+
+    class Meta:
+        verbose_name = "车辆车系表"
+        verbose_name_plural = "车辆车系表"
+
+    def __unicode__(self):
+        return self.car_series
+
+
+# 车辆车型表
+class CarModelInfo(models.Model):
+    car_series = models.ForeignKey(CarSeriesInfo, to_field='car_series', verbose_name=u'车系')
+    car_model = models.CharField(max_length=20, verbose_name=u'车型')
+
+    class Meta:
+        verbose_name = "车辆车型表"
+        verbose_name_plural = "车辆车型表"
+
+
 # 车辆信息表
+# TODO 品牌 车系 车型 外键于对应表
 class CarInfo(models.Model):
     username = models.ForeignKey(UserProfile, to_field="username", verbose_name=u'用户')
     car_id = models.CharField(max_length=20, unique=True, verbose_name=u'车牌号')
@@ -172,36 +208,3 @@ class OrderInfo(models.Model):
         verbose_name_plural = "订单信息表"
 
 
-# 车辆品牌表
-class CarBrandInfo(models.Model):
-    car_brand = models.CharField(max_length=10, unique=True, verbose_name=u'汽车品牌')
-
-    class Meta:
-        verbose_name = "车辆品牌表"
-        verbose_name_plural = "车辆品牌表"
-
-    def __unicode__(self):
-        return self.car_brand
-
-
-# 车辆车系表
-class CarSeriesInfo(models.Model):
-    car_brand = models.ForeignKey(CarBrandInfo, to_field='car_brand', verbose_name=u'汽车品牌')
-    car_series = models.CharField(max_length=10, unique=True, verbose_name=u'车系')
-
-    class Meta:
-        verbose_name = "车辆车系表"
-        verbose_name_plural = "车辆车系表"
-
-    def __unicode__(self):
-        return self.car_series
-
-
-# 车辆车型表
-class CarModelInfo(models.Model):
-    car_series = models.ForeignKey(CarSeriesInfo, to_field='car_series', verbose_name=u'车系')
-    car_model = models.CharField(max_length=20, verbose_name=u'车型')
-
-    class Meta:
-        verbose_name = "车辆车型表"
-        verbose_name_plural = "车辆车型表"
