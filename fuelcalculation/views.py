@@ -42,6 +42,9 @@ class SendCodeView(APIView):
             return http_response(error_no=2, info="cmx exception")
 
 
+# TODO 开一个或多个接口提供品牌、车系、车型数据
+
+
 # 车辆信息
 class SetCarInfoView(APIView):
     def post(self, request):
@@ -302,7 +305,7 @@ class FuelCalculationView(APIView):
                         f.save()
                     else:
                         FuelInfo.objects.create(id_id=id, car_id_id=car_id, time=time, fuel_l_km=last_mileages,
-                                                fuel_y_km=last_mileages, mileages=mileages, driving_km=km,
+                                                fuel_y_km=last_mileages, mileages=mileages, driving_km=last_mileages,
                                                 driving_moneys=moneys, driving_fuel_counts=fuel_counts)
 
             all_fuelinfo = FuelInfo.objects.filter(car_id_id=car_id)
