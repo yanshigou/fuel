@@ -89,10 +89,10 @@ class RefuelInfo(models.Model):
         (0, '未加满'),
         (1, '已加满')
     )
-    islight = (
-        (0, '油灯未亮'),
-        (1, '油灯已亮')
-    )
+    # islight = (
+    #     (0, '油灯未亮'),
+    #     (1, '油灯已亮')
+    # )
     isnorecord = (
         (0, '上一次有记录'),
         (1, '上一次没有记录')
@@ -101,7 +101,7 @@ class RefuelInfo(models.Model):
     fuel_type = models.ForeignKey(FuelType, to_field="fuel_type", verbose_name=u'燃料类型')
     time = models.DateTimeField(verbose_name=u'加油时间')
     is_full = models.IntegerField(default=1, verbose_name=u'是否加满', choices=isfull)
-    is_light = models.IntegerField(default=0, verbose_name=u'是否亮油灯', choices=islight)
+    # is_light = models.IntegerField(default=0, verbose_name=u'是否亮油灯', choices=islight)
     is_norecord = models.IntegerField(default=0, verbose_name=u'上一次没有记录', choices=isnorecord)
     mileages = models.CharField(max_length=10, verbose_name=u'里程碑总数/公里')
     prices = models.CharField(max_length=10, verbose_name=u'单价/元')
