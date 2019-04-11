@@ -44,7 +44,6 @@ class SendCodeView(APIView):
             return http_response(error_no=2, info="cmx exception")
 
 
-# TODO 开一个或多个接口提供品牌、车系、车型数据
 class CarBrandInfoView(APIView):
     def get(self, request):
         all = CarBrandInfo.objects.all()
@@ -166,7 +165,6 @@ class RefuelInfoView(APIView):
             if CarInfo.objects.filter(car_id=car_id, username_id=username).count() < 1:
                 return http_response(error_no=12, info="car_id not exist")
             is_full = request.data.get('is_full')
-            is_light = request.data.get('is_light')
             is_norecord = request.data.get('is_norecord')
             fuel_type = request.data.get('fuel_type')
             mileages = request.data.get('mileages')
@@ -176,7 +174,7 @@ class RefuelInfoView(APIView):
             fuel_station = request.data.get('fuel_station')
             remark = request.data.get('remark')
             time = request.data.get('time')
-            wi = {"car_id": car_id, "is_full": is_full, "is_light": is_light, "is_norecord": is_norecord,
+            wi = {"car_id": car_id, "is_full": is_full, "is_norecord": is_norecord,
                   "fuel_type": fuel_type, "mileages": mileages, "prices": prices, "moneys": moneys,
                   "fuel_counts": fuel_counts, "fuel_station": fuel_station, "remark": remark, "time": time}
             ser = RefuelInfoSerializer(data=wi)
@@ -201,7 +199,7 @@ class RefuelInfoView(APIView):
             car_id = request.query_params.get('car_id')
             if not is_user_exist(username):
                 return http_response(error_no=42, info="No User")
-            refuelinfo = RefuelInfo.objects.filter(car_id=car_id)
+            refuelinfo = RefuelInfo.objects.filter(car_id=car_id).order_by('-time')
             sers = RefuelInfoSerializer(refuelinfo, many=True)
             return http_response(data={"refuelinfo_list": sers.data})
         except KeyError:
@@ -220,7 +218,6 @@ class RefuelInfoView(APIView):
             if RefuelInfo.objects.filter(car_id=car_id, id=id).count() < 1:
                 return http_response(error_no=13, info="refuelinfo not exist")
             is_full = request.data.get('is_full')
-            is_light = request.data.get('is_light')
             is_norecord = request.data.get('is_norecord')
             fuel_type = request.data.get('fuel_type')
             mileages = request.data.get('mileages')
@@ -232,7 +229,6 @@ class RefuelInfoView(APIView):
             time = request.data.get('time')
             info = RefuelInfo.objects.get(car_id=car_id, id=id)
             info.is_full = is_full
-            info.is_light = is_light
             info.is_norecord = is_norecord
             info.fuel_type_id = fuel_type
             info.mileages = mileages
@@ -276,11 +272,12 @@ class FuelCalculationView(APIView):
             car_id = request.query_params.get('car_id')
             if not is_user_exist(username):
                 return http_response(error_no=42, info="No User")
-            all_refuelinfo = RefuelInfo.objects.filter(car_id=car_id)
+            all_refuelinfo = RefuelInfo.objects.filter(car_id=car_id).order_by('-time')
             sers = RefuelInfoSerializer(all_refuelinfo, many=True)
             # 取出每次加油记录
             for i in sers.data:
                 is_norecord = i.get('is_norecord')
+                is_full = i.get('is_full')
                 id = i.get('id')
                 fuel_counts = i.get('fuel_counts')
                 mileages = i.get('mileages')
@@ -288,9 +285,37 @@ class FuelCalculationView(APIView):
                 time = i.get('time')
 
                 # 上一次有记录
-                if is_norecord == 0 and RefuelInfo.objects.filter(time__lt=time, car_id=car_id).count() > 0:
+                # 增加加满判断 均需两次才能计算
+                if is_norecord == 0 and is_full == 1 and RefuelInfo.objects.filter(time__lt=time, car_id=car_id).count() > 0:
                     last = RefuelInfo.objects.filter(time__lt=time, car_id=car_id).order_by('-time')[0]
                     last_mileages = last.mileages
+
+                    # 大改动——
+                    last_isfull = last.is_full
+                    last_id = last.id  # 让油耗重新赋值给上一次的记录
+                    if last_isfull != 1:
+                        last_mileages = '???'
+                        if FuelInfo.objects.filter(id_id=id, car_id_id=car_id).count() > 0:
+                            f = FuelInfo.objects.get(id_id=id, car_id_id=car_id)
+                            f.fuel_l_km = last_mileages
+                            f.fuel_y_km = last_mileages
+                            f.driving_km = last_mileages
+                            f.mileages = mileages
+                            f.time = time
+                            f.save()
+                            all_fuelinfo = FuelInfo.objects.filter(car_id_id=car_id)
+                            sers = FuelInfoSerializer(all_fuelinfo, many=True)
+                            return http_response(data={"all_fuelinfo": sers.data})
+                        else:
+                            FuelInfo.objects.create(id_id=id, car_id_id=car_id, time=time, fuel_l_km=last_mileages,
+                                                    fuel_y_km=last_mileages, mileages=mileages,
+                                                    driving_km=last_mileages,
+                                                    driving_moneys=moneys, driving_fuel_counts=fuel_counts)
+                            all_fuelinfo = FuelInfo.objects.filter(car_id_id=car_id)
+                            sers = FuelInfoSerializer(all_fuelinfo, many=True)
+                            return http_response(data={"all_fuelinfo": sers.data})
+                    # 大改动——
+
                     l = float(fuel_counts) * 100
                     km = int(mileages) - int(last_mileages)
                     if km <= 0:
@@ -301,8 +326,8 @@ class FuelCalculationView(APIView):
                     print("fuel_l_km:", fuel_l_km)
                     fuel_y_km = float("%.2f" % (y / km))
                     print("fuel_y_km", fuel_y_km)
-                    if FuelInfo.objects.filter(id_id=id, car_id_id=car_id).count() > 0:
-                        f = FuelInfo.objects.get(id_id=id, car_id_id=car_id)
+                    if FuelInfo.objects.filter(id_id=last_id, car_id_id=car_id).count() > 0:
+                        f = FuelInfo.objects.get(id_id=last_id, car_id_id=car_id)
                         f.fuel_l_km = fuel_l_km
                         f.fuel_y_km = fuel_y_km
                         f.driving_km = km
@@ -312,7 +337,7 @@ class FuelCalculationView(APIView):
                         f.driving_fuel_counts = fuel_counts
                         f.save()
                     else:
-                        FuelInfo.objects.create(id_id=id, car_id_id=car_id, time=time, fuel_l_km=fuel_l_km,
+                        FuelInfo.objects.create(id_id=last_id, car_id_id=car_id, time=time, fuel_l_km=fuel_l_km,
                                                 fuel_y_km=fuel_y_km, mileages=mileages, driving_km=km,
                                                 driving_moneys=moneys, driving_fuel_counts=fuel_counts)
                 # 上一次没有记录
