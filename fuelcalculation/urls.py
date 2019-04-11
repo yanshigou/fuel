@@ -7,6 +7,7 @@ from .userviews import LoginViewSet, RegisterViewSet, ForgetPasswordViewSet, Log
 from .userviews import CheckUserView
 from .views import SendCodeView, SetCarInfoView, RefuelInfoView, FuelCalculationView, RankingListView
 from .views import ExpenditureInfoView, CarCareInfoView, JuHeWeather
+from .views import CarBrandInfoView, CarSeriesInfoView, CarModelInfoView
 
 
 urlpatterns = [
@@ -24,5 +25,8 @@ urlpatterns = [
     url(r'^expense/$', ExpenditureInfoView.as_view()),
     url(r'^carCare/$', CarCareInfoView.as_view()),
     url(r'^weather/$', JuHeWeather.as_view()),
+    url(r'^carBrand/$', CarBrandInfoView.as_view()),
+    url(r'^carSeries/$', CarSeriesInfoView.as_view()),
+    url(r'^carModel/$', CarModelInfoView.as_view()),
 
 ]

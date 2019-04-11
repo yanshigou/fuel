@@ -4,8 +4,10 @@ from __future__ import unicode_literals
 from rest_framework.views import APIView
 from .functions import random_str, http_response, is_user_exist, refuel_moneys
 from .models import CarInfo, RefuelInfo, FuelInfo, RankingList, ExpenditureInfo, CarCareInfo
+from .models import CarBrandInfo, CarSeriesInfo, CarModelInfo
 from .serializers import CarInfoSerializer, RefuelInfoSerializer, ExpenditureInfoSerializer, FuelInfoSerializer
 from .serializers import RankingListSerializer, CarCareInfoSerializer
+from .serializers import CarBrandInfoSerializer, CarSeriesInfoSerializer, CarModelInfoSerializer
 import json
 import requests
 import traceback
@@ -43,6 +45,27 @@ class SendCodeView(APIView):
 
 
 # TODO 开一个或多个接口提供品牌、车系、车型数据
+class CarBrandInfoView(APIView):
+    def get(self, request):
+        all = CarBrandInfo.objects.all()
+        sers = CarBrandInfoSerializer(all, many=True)
+        return http_response(data={"sers": sers.data})
+
+
+class CarSeriesInfoView(APIView):
+    def get(self, request):
+        brand = request.query_params.get('brand')
+        all = CarSeriesInfo.objects.filter(car_brand_id=brand)
+        sers = CarSeriesInfoSerializer(all, many=True)
+        return http_response(data={"sers": sers.data})
+
+
+class CarModelInfoView(APIView):
+    def get(self, request):
+        series = request.query_params.get('series')
+        all = CarModelInfo.objects.filter(car_series_id=series)
+        sers = CarModelInfoSerializer(all, many=True)
+        return http_response(data={"sers": sers.data})
 
 
 # 车辆信息
@@ -621,7 +644,7 @@ class CarCareInfoView(APIView):
 class JuHeWeather(APIView):
     def post(self, request):
         try:
-            wcity = request.data.get('wcity')
+            fuel_city = request.data.get('fuel_city')
             key = "81494dec79533d4cff679d470b4daa97"
             ava_api = "http://apis.juhe.cn/cnoil/oil_city"
             url = ava_api+"?key="+key
@@ -632,13 +655,13 @@ class JuHeWeather(APIView):
             reason = res_json.get('reason')
             print(resultcode)
             print(reason)
-            # if resultcode == u"200" and reason == u"查询成功!":
-            #     results = res_json.get("result")
-            #     for i in results:
-            #         city = i.get('city')
-            #         print(city)
-            #         if city == wcity:
-            #             return http_response(data=i)
+            if resultcode == u"200" and reason == u"查询成功!":
+                results = res_json.get("result")
+                for i in results:
+                    city = i.get('city')
+                    print(city)
+                    if city == fuel_city:
+                        return http_response(data=i)
 
             return http_response(data={"data": res_json})
         except:
