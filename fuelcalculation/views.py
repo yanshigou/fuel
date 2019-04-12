@@ -380,16 +380,17 @@ class FuelCalculationView(APIView):
                                                 driving_moneys=moneys, driving_fuel_counts=fuel_counts)
 
             # 循环后最后一次需要单独增加
-            i = sers.data[-1]
-            last_mileages = '???'
-            id = i.get('id')
-            fuel_counts = i.get('fuel_counts')
-            mileages = i.get('mileages')
-            time = i.get('time')
-            moneys = i.get('moneys')
-            FuelInfo.objects.create(id_id=id, car_id_id=car_id, time=time, fuel_l_km=last_mileages,
-                                    fuel_y_km=last_mileages, mileages=mileages, driving_km=last_mileages,
-                                    driving_moneys=moneys, driving_fuel_counts=fuel_counts)
+            if sers.data:
+                i = sers.data[-1]
+                last_mileages = '???'
+                id = i.get('id')
+                fuel_counts = i.get('fuel_counts')
+                mileages = i.get('mileages')
+                time = i.get('time')
+                moneys = i.get('moneys')
+                FuelInfo.objects.create(id_id=id, car_id_id=car_id, time=time, fuel_l_km=last_mileages,
+                                        fuel_y_km=last_mileages, mileages=mileages, driving_km=last_mileages,
+                                        driving_moneys=moneys, driving_fuel_counts=fuel_counts)
 
             all_fuelinfo = FuelInfo.objects.filter(car_id_id=car_id).order_by('-time')
             sers = FuelInfoSerializer(all_fuelinfo, many=True)
@@ -676,7 +677,7 @@ class CarCareInfoView(APIView):
             return http_response(error_no=2, info="cmx exception")
 
 
-# TODO 油价查询 聚合数据 or 阿凡达数据
+# TODO 天气查询 聚合数据
 # http://apis.juhe.cn/cnoil/oil_city  http://api.avatardata.cn/OilPrice/LookUp
 # 请求地址：http://apis.juhe.cn/cnoil/oil_city
 # 请求参数：dtype=&key=81494dec79533d4cff679d470b4daa97
@@ -723,6 +724,29 @@ class JuHeWeather(APIView):
                     if city == fuel_city:
                         return http_response(data=i)
 
+            return http_response(data={"data": res_json})
+        except:
+            traceback.print_exc()
+            return http_response(error_no=2, info="cmx exception")
+
+
+# 聚合老黄历查询
+class JuHeDate(APIView):
+    def post(self, request):
+        try:
+            date = request.data.get('date')
+            date_type = request.data.get('date_type')  # 天 时辰 d h
+            key = "b47bba3bd061172b1ec440afb20ede12"
+            ava_api = "http://v.juhe.cn/laohuangli/" + date_type
+            url = ava_api+"?date="+date+"&key="+key
+            res = requests.get(url)
+            res_json = json.loads(res.content)
+            print(res_json)
+            reason = res_json.get('reason')
+            print(reason)
+            if reason == "successed":
+                results = res_json.get("result")
+                return http_response(data={"data": results})
             return http_response(data={"data": res_json})
         except:
             traceback.print_exc()
