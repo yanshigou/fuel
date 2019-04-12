@@ -46,7 +46,7 @@ class CarSeriesInfo(models.Model):
 # 车辆车型表
 class CarModelInfo(models.Model):
     car_series = models.ForeignKey(CarSeriesInfo, to_field='car_series', verbose_name=u'车系')
-    car_model = models.CharField(max_length=20, verbose_name=u'车型')
+    car_model = models.CharField(max_length=50, verbose_name=u'车型')
 
     class Meta:
         verbose_name = "车辆车型表"
@@ -61,7 +61,7 @@ class CarInfo(models.Model):
     car_brand = models.CharField(max_length=10, null=True, blank=True, verbose_name=u'汽车品牌')
     car_name = models.CharField(max_length=10, default=u'我的小车', verbose_name=u'汽车昵称')
     car_series = models.CharField(max_length=10, null=True, blank=True, verbose_name=u'车系')
-    car_model = models.CharField(max_length=20, null=True, blank=True, verbose_name=u'车型')
+    car_model = models.CharField(max_length=50, null=True, blank=True, verbose_name=u'车型')
 
     class Meta:
         verbose_name = "车辆信息表"
