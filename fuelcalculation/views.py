@@ -388,9 +388,10 @@ class FuelCalculationView(APIView):
                 mileages = i.get('mileages')
                 time = i.get('time')
                 moneys = i.get('moneys')
-                FuelInfo.objects.create(id_id=id, car_id_id=car_id, time=time, fuel_l_km=last_mileages,
-                                        fuel_y_km=last_mileages, mileages=mileages, driving_km=last_mileages,
-                                        driving_moneys=moneys, driving_fuel_counts=fuel_counts)
+                if not FuelInfo.objects.filter(id_id=id, car_id_id=car_id):
+                    FuelInfo.objects.create(id_id=id, car_id_id=car_id, time=time, fuel_l_km=last_mileages,
+                                            fuel_y_km=last_mileages, mileages=mileages, driving_km=last_mileages,
+                                            driving_moneys=moneys, driving_fuel_counts=fuel_counts)
 
             all_fuelinfo = FuelInfo.objects.filter(car_id_id=car_id).order_by('-time')
             sers = FuelInfoSerializer(all_fuelinfo, many=True)
