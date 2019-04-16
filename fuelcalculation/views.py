@@ -12,6 +12,7 @@ import json
 import requests
 import traceback
 from datetime import datetime, timedelta
+# from urllib import urlencode
 
 
 # 发送手机验证码
@@ -703,7 +704,7 @@ class CarCareInfoView(APIView):
 
 
 # 聚合数据
-class JuHeWeather(APIView):
+class JuHeOil(APIView):
     def post(self, request):
         try:
             fuel_city = request.data.get('fuel_city')
@@ -752,3 +753,32 @@ class JuHeDate(APIView):
         except:
             traceback.print_exc()
             return http_response(error_no=2, info="cmx exception")
+
+
+# 聚合天气查询
+class JuHeWeather(APIView):
+    def post(self, request):
+        try:
+            cityname = request.data.get('cityname')
+            ava_api = "http://v.juhe.cn/weather/index?"
+            key = "0dc5f96cdfa7408bf423fa6b11e7eeb4"
+            url = ava_api+"?cityname="+cityname+"&key="+key
+            # print(urlencode({"cityname": cityname}))
+            # url = ava_api + urlencode({"cityname": cityname}) + "&key=" + key  # 可行，只不过requests封装了urlencode
+            res = requests.get(url)
+            res_json = json.loads(res.content)
+            print(res_json)
+            reason = res_json.get('reason')
+            print(reason)
+            if reason == "successed!":
+                results = res_json.get("result")
+                return http_response(data={"data": results})
+            return http_response(data={"data": res_json})
+        except:
+            traceback.print_exc()
+            return http_response(error_no=2, info="cmx exception")
+
+
+# 图灵
+class Tuling(APIView):
+    pass

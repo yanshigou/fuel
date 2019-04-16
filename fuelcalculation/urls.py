@@ -6,7 +6,7 @@ from django.conf.urls import url
 from .userviews import LoginViewSet, RegisterViewSet, ForgetPasswordViewSet, LogoutViewSet, UserInfoViewSet
 from .userviews import CheckUserView
 from .views import SendCodeView, SetCarInfoView, RefuelInfoView, FuelCalculationView, RankingListView
-from .views import ExpenditureInfoView, CarCareInfoView, JuHeWeather, FuelTypeView, JuHeDate
+from .views import ExpenditureInfoView, CarCareInfoView, JuHeOil, FuelTypeView, JuHeDate, JuHeWeather
 from .views import CarBrandInfoView, CarSeriesInfoView, CarModelInfoView
 
 
@@ -24,11 +24,12 @@ urlpatterns = [
     url(r'^getRankList/$', RankingListView.as_view()),
     url(r'^expense/$', ExpenditureInfoView.as_view()),
     url(r'^carCare/$', CarCareInfoView.as_view()),
-    url(r'^weather/$', JuHeWeather.as_view()),
+    url(r'^oil/$', JuHeOil.as_view()),
     url(r'^carBrand/$', CarBrandInfoView.as_view()),
     url(r'^carSeries/$', CarSeriesInfoView.as_view()),
     url(r'^carModel/$', CarModelInfoView.as_view()),
     url(r'^fuelType/$', FuelTypeView.as_view()),
     url(r'^date/$', JuHeDate.as_view()),
+    url(r'^weather/$', JuHeWeather.as_view()),
 
 ]
