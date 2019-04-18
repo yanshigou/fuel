@@ -25,7 +25,7 @@ def import_brand():
         body = {
             "car_brand": car_brand
         }
-        res = requests.post("http://127.0.0.1:8000/fuelcal/carBrand/", data=json.dumps(body), headers=headers)
+        res = requests.post("http://www.dogebug.online:9000/fuelcal/carBrand/", data=json.dumps(body), headers=headers)
         print(res)
     f.close()
     print(len(l))
@@ -47,7 +47,7 @@ def import_series():
             "car_brand": car_brand,
             "car_series": car_series
         }
-        res = requests.post("http://127.0.0.1:8000/fuelcal/carSeries/", data=json.dumps(body), headers=headers)
+        res = requests.post("http://www.dogebug.online:9000/fuelcal/carSeries/", data=json.dumps(body), headers=headers)
         print(res)
     f.close()
     print(len(l))
@@ -65,14 +65,12 @@ def import_model():
         for i in car_models:
             car_model += i+" "
         print(car_model)
-        if car_model in l:
-            continue
         l.append(car_model)
         body = {
             "car_series": car_series,
             "car_model": car_model
         }
-        res = requests.post("http://127.0.0.1:8000/fuelcal/carModel/", data=json.dumps(body), headers=headers)
+        res = requests.post("http://www.dogebug.online:9000/fuelcal/carModel/", data=json.dumps(body), headers=headers)
         print(res)
     f.close()
     print(len(l))
@@ -80,10 +78,12 @@ def import_model():
 
 if __name__ == '__main__':
     time1 = datetime.now()
+    print(time1)
     import_brand()
     sleep(1)
     import_series()
     sleep(1)
     import_model()
     time2 = datetime.now()
+    print(time2)
     print(str(time2-time1))
