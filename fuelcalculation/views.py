@@ -51,6 +51,18 @@ class CarBrandInfoView(APIView):
         sers = CarBrandInfoSerializer(all, many=True)
         return http_response(data={"sers": sers.data})
 
+    def post(self, request):
+        try:
+            car_brand = request.data.get('car_brand')
+            if CarBrandInfo.objects.filter(car_brand=car_brand):
+                return http_response(error_no=3, info="exist")
+            else:
+                CarBrandInfo.objects.create(car_brand=car_brand)
+                return http_response()
+        except:
+            traceback.print_exc()
+            return http_response(error_no=2, info="cmx exception")
+
 
 class CarSeriesInfoView(APIView):
     def get(self, request):
@@ -59,6 +71,19 @@ class CarSeriesInfoView(APIView):
         sers = CarSeriesInfoSerializer(all, many=True)
         return http_response(data={"sers": sers.data})
 
+    def post(self, request):
+        try:
+            car_brand = request.data.get('car_brand')
+            car_series = request.data.get('car_series')
+            if CarSeriesInfo.objects.filter(car_brand=car_brand, car_series=car_series):
+                return http_response(error_no=3, info="exist")
+            else:
+                CarSeriesInfo.objects.create(car_brand_id=car_brand, car_series=car_series)
+                return http_response()
+        except:
+            traceback.print_exc()
+            return http_response(error_no=2, info="cmx exception")
+
 
 class CarModelInfoView(APIView):
     def get(self, request):
@@ -66,6 +91,19 @@ class CarModelInfoView(APIView):
         all = CarModelInfo.objects.filter(car_series_id=series)
         sers = CarModelInfoSerializer(all, many=True)
         return http_response(data={"sers": sers.data})
+
+    def post(self, request):
+        try:
+            car_series = request.data.get('car_series')
+            car_model = request.data.get('car_model')
+            if CarModelInfo.objects.filter(car_model=car_model, car_series_id=car_series):
+                return http_response(error_no=3, info="exist")
+            else:
+                CarModelInfo.objects.create(car_model=car_model, car_series_id=car_series)
+                return http_response()
+        except:
+            traceback.print_exc()
+            return http_response(error_no=2, info="cmx exception")
 
 
 class FuelTypeView(APIView):
@@ -779,6 +817,7 @@ class JuHeWeather(APIView):
             return http_response(error_no=2, info="cmx exception")
 
 
+# TODO 接入图灵
 # 图灵
 class Tuling(APIView):
     pass
