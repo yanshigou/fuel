@@ -75,7 +75,7 @@ class CarSeriesInfoView(APIView):
         try:
             car_brand = request.data.get('car_brand')
             car_series = request.data.get('car_series')
-            if CarSeriesInfo.objects.filter(car_brand=car_brand, car_series=car_series):
+            if CarSeriesInfo.objects.filter(car_brand_id=car_brand, car_series=car_series):
                 return http_response(error_no=3, info="exist")
             else:
                 CarSeriesInfo.objects.create(car_brand_id=car_brand, car_series=car_series)
