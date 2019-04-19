@@ -318,7 +318,7 @@ class FuelCalculationView(APIView):
             car_id = request.query_params.get('car_id')
             if not is_user_exist(username):
                 return http_response(error_no=42, info="No User")
-            FuelInfo.objects.all().delete()
+            # FuelInfo.objects.all().delete()
             all_refuelinfo = RefuelInfo.objects.filter(car_id=car_id).order_by('time')
             sers = RefuelInfoSerializer(all_refuelinfo, many=True)
             # 取出每次加油记录
@@ -337,6 +337,7 @@ class FuelCalculationView(APIView):
                     last = RefuelInfo.objects.filter(time__lt=time, car_id=car_id).order_by('-time')[0]
                     last_mileages = last.mileages
                     last_moneys = last.moneys
+                    last_prices = last.prices
                     # 大改动——
                     last_isfull = last.is_full
                     last_id = last.id  # 让油耗重新赋值给上一次的记录
@@ -368,7 +369,8 @@ class FuelCalculationView(APIView):
                     if km <= 0:
                         print(mileages, last_mileages)
                         return http_response(error_no=5, info="km error")
-                    y = float(last_moneys)
+                    # y = float(last_moneys)  # 逻辑应该为 使用金额等于上一次的单价乘以此次消耗的油量
+                    y = float(last_prices) * float(fuel_counts)
                     fuel_l_km = float("%.2f" % (l / km))
                     print("fuel_l_km:", fuel_l_km)
                     fuel_y_km = float("%.2f" % (y / km))
@@ -432,7 +434,6 @@ class FuelCalculationView(APIView):
                 i = sers.data[-1]
                 last_value = '???'
                 id = i.get('id')
-                fuel_counts = i.get('fuel_counts')
                 mileages = i.get('mileages')
                 time = i.get('time')
                 moneys = i.get('moneys')
