@@ -12,7 +12,7 @@ import json
 import requests
 import traceback
 from datetime import datetime, timedelta
-# from urllib import urlencode
+from urllib import urlencode
 
 
 # 发送手机验证码
@@ -800,9 +800,9 @@ class JuHeWeather(APIView):
             cityname = request.data.get('cityname')
             ava_api = "http://v.juhe.cn/weather/index?"
             key = "0dc5f96cdfa7408bf423fa6b11e7eeb4"
-            url = ava_api+"?cityname="+cityname+"&key="+key
+            # url = ava_api+"?cityname="+cityname+"&key="+key
             # print(urlencode({"cityname": cityname}))
-            # url = ava_api + urlencode({"cityname": cityname}) + "&key=" + key  # 可行，只不过requests封装了urlencode
+            url = ava_api + urlencode({"cityname": cityname}) + "&key=" + key  # 可行，只不过requests封装了urlencode
             res = requests.get(url)
             res_json = json.loads(res.content)
             print(res_json)
