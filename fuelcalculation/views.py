@@ -314,6 +314,7 @@ class RefuelInfoView(APIView):
 class FuelCalculationView(APIView):
     def get(self, request):
         try:
+            time1 = datetime.now()
             username = request.query_params.get("username")
             car_id = request.query_params.get('car_id')
             if not is_user_exist(username):
@@ -328,7 +329,6 @@ class FuelCalculationView(APIView):
                 id = i.get('id')
                 fuel_counts = i.get('fuel_counts')
                 mileages = i.get('mileages')
-                moneys = i.get('moneys')
                 time = i.get('time')
 
                 # 上一次有记录
@@ -336,7 +336,6 @@ class FuelCalculationView(APIView):
                 if is_norecord == 0 and is_full == 1 and RefuelInfo.objects.filter(time__lt=time, car_id=car_id).count() > 0:
                     last = RefuelInfo.objects.filter(time__lt=time, car_id=car_id).order_by('-time')[0]
                     last_mileages = last.mileages
-                    last_moneys = last.moneys
                     last_prices = last.prices
                     # 大改动——
                     last_isfull = last.is_full
@@ -388,13 +387,12 @@ class FuelCalculationView(APIView):
                     else:
                         FuelInfo.objects.create(id_id=last_id, car_id_id=car_id, time=last_time, fuel_l_km=fuel_l_km,
                                                 fuel_y_km=fuel_y_km, mileages=last_mileages, driving_km=km,
-                                                driving_moneys=last_moneys, driving_fuel_counts=fuel_counts)
+                                                driving_moneys=y, driving_fuel_counts=fuel_counts)
                 elif is_full != 1:
                     last_value = '???'
                     last = RefuelInfo.objects.filter(time__lt=time, car_id=car_id).order_by('-time')[0]
                     last_id = last.id  # 让油耗重新赋值给上一次的记录
                     last_time = last.time  # 让油耗重新赋值给上一次的记录
-                    last_moneys = last.moneys
                     last_mileages = last.mileages
                     if FuelInfo.objects.filter(id_id=last_id, car_id_id=car_id).count() > 0:
                         f = FuelInfo.objects.get(id_id=last_id, car_id_id=car_id)
@@ -421,13 +419,13 @@ class FuelCalculationView(APIView):
                         f.driving_km = last_value
                         f.mileages = mileages
                         f.time = time
-                        f.driving_moneys = moneys
-                        f.driving_fuel_counts = fuel_counts
+                        f.driving_moneys = last_value
+                        f.driving_fuel_counts = last_value
                         f.save()
                     else:
                         FuelInfo.objects.create(id_id=id, car_id_id=car_id, time=time, fuel_l_km=last_value,
                                                 fuel_y_km=last_value, mileages=mileages, driving_km=last_value,
-                                                driving_moneys=moneys, driving_fuel_counts=fuel_counts)
+                                                driving_moneys=last_value, driving_fuel_counts=last_value)
 
             # 循环后最后一次需要单独增加
             if sers.data:
@@ -436,14 +434,15 @@ class FuelCalculationView(APIView):
                 id = i.get('id')
                 mileages = i.get('mileages')
                 time = i.get('time')
-                moneys = i.get('moneys')
                 if not FuelInfo.objects.filter(id_id=id, car_id_id=car_id):
                     FuelInfo.objects.create(id_id=id, car_id_id=car_id, time=time, fuel_l_km=last_value,
                                             fuel_y_km=last_value, mileages=mileages, driving_km=last_value,
-                                            driving_moneys=moneys, driving_fuel_counts=last_value)
+                                            driving_moneys=last_value, driving_fuel_counts=last_value)
 
             all_fuelinfo = FuelInfo.objects.filter(car_id_id=car_id).order_by('-time')
             sers = FuelInfoSerializer(all_fuelinfo, many=True)
+            time2 = datetime.now()
+            print('油耗计算耗时:'+str(time2-time1))
             return http_response(data={"all_fuelinfo": sers.data})
         except KeyError:
             return http_response(error_no=1, info="input error")
@@ -456,6 +455,7 @@ class FuelCalculationView(APIView):
 class RankingListView(APIView):
     def get(self, request):
         try:
+            time1 = datetime.now()
             username = request.query_params.get("username")
             car_id = request.query_params.get('car_id')
             if not is_user_exist(username):
@@ -517,6 +517,8 @@ class RankingListView(APIView):
                 # return http_response(error_no=8, info="other error ")
             all = RankingList.objects.all().order_by('average_fuel_l_km')[:10]
             all_rank = RankingListSerializer(all, many=True)
+            time2 = datetime.now()
+            print('排行榜:' + str(time2 - time1))
             return http_response(data={"ranklist": all_rank.data})
         except KeyError:
             return http_response(error_no=1, info="input error")
@@ -820,6 +822,38 @@ class JuHeWeather(APIView):
             print(reason)
             if reason == "successed!":
                 results = res_json.get("result")
+                return http_response(data={"data": results})
+            return http_response(data={"data": res_json})
+        except:
+            traceback.print_exc()
+            return http_response(error_no=2, info="cmx exception")
+
+
+# 免费天气接口
+class Weather(APIView):
+    def post(self, request):
+        try:
+            cityname = request.data.get('cityname')
+            citycode = request.data.get('citycode')
+            api = "http://t.weather.sojson.com/api/weather/city/"
+            if citycode:
+                url = api + str(citycode)
+            # elif cityname:
+                # city = CityInfo.objects.filter(cityname=cityname)
+                # if city:
+                #     code = city[0].citycode
+                #     url = api + code
+                # else:
+                #     return http_response(error_no=4, info="cityname citycode error")
+            else:
+                url = "http://t.weather.sojson.com/api/weather/city/101040100"  # 默认重庆
+            res = requests.get(url)
+            res_json = json.loads(res.content)
+            print(res_json)
+            message = res_json.get('message')
+            print(message)
+            if message == "Success !":
+                results = res_json.get("data")
                 return http_response(data={"data": results})
             return http_response(data={"data": res_json})
         except:
