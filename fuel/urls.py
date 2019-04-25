@@ -15,8 +15,10 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 import xadmin
+from django.views.generic import TemplateView
 
 urlpatterns = [
+    url(r'^$', TemplateView.as_view(template_name="fuel.html")),
     url(r'^xadmin/', xadmin.site.urls),
     url(r'^api-auth/', include('rest_framework.urls')),
     url(r'^fuelcal/', include('fuelcalculation.urls')),
