@@ -24,7 +24,7 @@ sys.path.insert(0, os.path.join(BASE_DIR, 'extra_apps'))
 SECRET_KEY = '%n5*pngk^ggpcpbsljh(c2z(una_)62(bfof8+k#&a-ixle(x2'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['47.106.174.128', 'www.dogebug.online']
 
