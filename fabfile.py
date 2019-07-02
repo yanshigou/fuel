@@ -6,7 +6,7 @@ from fabvenv import virtualenv
 
 # 登录用户和主机名：
 env.user = 'root'
-env.password = '个人网站，请勿使用'
+env.password = 'Dzt1234567'
 env.hosts = ['47.106.174.128']
 pack_name = 'deploypack_fuel.tar.gz'
 
