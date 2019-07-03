@@ -467,9 +467,11 @@ class RankingListView(APIView):
             if not is_user_exist(username):
                 return http_response(error_no=42, info="No User")
             all_fuelinfo = FuelInfo.objects.filter(car_id=car_id)
+            # print(all_fuelinfo)
             if all_fuelinfo.count() < 1:
                 return http_response(error_no=42, info="No car_id")
             sers = FuelInfoSerializer(all_fuelinfo, many=True)
+            print(sers.data)
             # 取出油耗记录
             list_time = []
             list_fuel_l_km = []
@@ -481,6 +483,7 @@ class RankingListView(APIView):
             for i in sers.data:
                 fuel_l_km = i.get('fuel_l_km')
                 if fuel_l_km == ('???' or '?'):
+                    print(fuel_l_km)
                     continue
                 time = i.get('time')
                 fuel_y_km = i.get('fuel_y_km')
@@ -513,9 +516,10 @@ class RankingListView(APIView):
                 # sers = RankingListSerializer(rank)
                 # return http_response(data={"ranklist": sers.data})
             else:
-                wi = {"average_fuel_l_km": average_fuel_l_km, "average_fuel_y_km": average_fuel_y_km, "km": km,
-                      "sum_km": sum_km, "sum_moneys": sum_moneys, "sum_fuel_counts": sum_fuel_counts,
+                wi = {"average_fuel_l_km": round(average_fuel_l_km, 2), "average_fuel_y_km": round(average_fuel_y_km, 2), "km": km,
+                      "sum_km": sum_km, "sum_moneys": round(sum_moneys, 2), "sum_fuel_counts": round(sum_fuel_counts, 2),
                       "car_id": car_id, "username": username}
+                print(wi)
                 sers = RankingListSerializer(data=wi)
                 if sers.is_valid():
                     sers.save()
