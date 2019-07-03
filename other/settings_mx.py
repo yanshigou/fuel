@@ -26,7 +26,7 @@ SECRET_KEY = '%n5*pngk^ggpcpbsljh(c2z(una_)62(bfof8+k#&a-ixle(x2'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['47.106.174.128', 'www.dogebug.online', '']
+ALLOWED_HOSTS = ['47.106.174.128', 'www.dogebug.online', 'fuel.dogebug.cn']
 
 
 # Application definition
@@ -79,32 +79,32 @@ WSGI_APPLICATION = 'fuel.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'fuel',
-#         'USER': 'dzt',
-#         'PASSWORD': 'dzt123',
-#         'HOST': '47.106.174.128',
-#         'PORT': '3306',
-#         'OPTIONS': {
-#             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
-#         }
-#     }
-# }
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'fuel',
-        'USER': 'root',
-        'PASSWORD': 'Rinima991022',
-        'HOST': 'cq-cdb-f86d75dj.sql.tencentcdb.com',
-        'PORT': '63999',
+        'USER': 'dzt',
+        'PASSWORD': 'dzt123',
+        'HOST': '47.106.174.128',
+        'PORT': '3306',
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
         }
     }
 }
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'fuel',
+#         'USER': 'root',
+#         'PASSWORD': 'Rinima991022',
+#         'HOST': 'cq-cdb-f86d75dj.sql.tencentcdb.com',
+#         'PORT': '63999',
+#         'OPTIONS': {
+#             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+#         }
+#     }
+# }
 
 
 # Password validation
