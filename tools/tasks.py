@@ -124,10 +124,21 @@ def fuel_task(car_id):
             id = i.get('id')
             mileages = i.get('mileages')
             time = i.get('time')
-            if not FuelInfo.objects.filter(id_id=id, car_id_id=car_id):
-                FuelInfo.objects.create(id_id=id, car_id_id=car_id, time=time, fuel_l_km=last_value,
-                                        fuel_y_km=last_value, mileages=mileages, driving_km=last_value,
-                                        driving_moneys=last_value, driving_fuel_counts=last_value)
+            fuelinfo = FuelInfo.objects.filter(id_id=id, car_id_id=car_id)
+            if fuelinfo:
+                fuelinfo[0].time = time
+                fuelinfo[0].mileages = mileages
+                fuelinfo[0].fuel_l_km = last_value
+                fuelinfo[0].fuel_y_km = last_value
+                fuelinfo[0].driving_km = last_value
+                fuelinfo[0].driving_moneys = last_value
+                fuelinfo[0].driving_fuel_counts = last_value
+                fuelinfo[0].save()
+                return True
+
+            FuelInfo.objects.create(id_id=id, car_id_id=car_id, time=time, fuel_l_km=last_value,
+                                    fuel_y_km=last_value, mileages=mileages, driving_km=last_value,
+                                    driving_moneys=last_value, driving_fuel_counts=last_value)
         return True
     except Exception as e:
         traceback.print_exc()
