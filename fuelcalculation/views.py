@@ -501,6 +501,9 @@ class RankingListView(APIView):
             average_fuel_l_km = sum(list_fuel_l_km) / len(list_fuel_l_km)
             average_fuel_y_km = sum(list_fuel_y_km) / len(list_fuel_y_km)
             km = max(list_mileages)
+            r = RefuelInfo.objects.filter(mileages__gt=km).order_by('-time')
+            if r:
+                km = r[0].mileages
             sum_km = sum(list_driving_km)
             sum_moneys = sum(list_driving_moneys)
             sum_fuel_counts = sum(list_driving_fuel_counts)
@@ -508,7 +511,7 @@ class RankingListView(APIView):
                 rank = RankingList.objects.get(car_id=car_id)
                 rank.average_fuel_l_km = float("%.2f" % average_fuel_l_km)
                 rank.average_fuel_y_km = float("%.2f" % average_fuel_y_km)
-                rank.km = rank.km
+                rank.km = km
                 rank.sum_km = sum_km
                 rank.sum_moneys = sum_moneys
                 rank.sum_fuel_counts = sum_fuel_counts
