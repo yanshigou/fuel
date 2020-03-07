@@ -1,5 +1,5 @@
 #!/bin/sh
-NAME="walkerfree"
+NAME="fuel_uwsgi.ini"
 if [ ! -n "$NAME" ];then
     echo "no arguments"
     exit;
