@@ -5,9 +5,9 @@ from fabric.api import *
 from fabvenv import virtualenv
 
 # 登录用户和主机名：
-env.user = 'root'
-env.password = 'Dzt1234567'
-env.hosts = ['47.106.174.128']
+env.user = 'ubuntu'
+env.password = '***!!?'
+env.hosts = ['***']
 pack_name = 'deploypack_fuel.tar.gz'
 
 
@@ -31,8 +31,8 @@ def deploy():
     print(env.host)
     hosttag = ''
     remote_work_dir = ''
-    if env.host == '47.106.174.128':
-        remote_work_dir = '/root/www/fuel/'
+    if env.host == '111.229.74.137':
+        remote_work_dir = '/home/ubuntu/www/fuel/'
         hosttag = 'mx'
     else:
         exit(1)
@@ -54,8 +54,8 @@ def deploy():
     run('mv %sother/uwsgi_params_%s %suwsgi_params' % (remote_work_dir, hosttag, remote_work_dir))
     run('rm -rf %sother' % remote_work_dir)
     with cd(remote_work_dir):
-        if env.host == '47.106.174.128':
-            with virtualenv('/root/www/fuel/kkwork'):
+        if env.host == '111.229.74.137':
+            with virtualenv('/home/ubuntu/www/fuel/kkwork'):
                 run('python manage.py makemigrations')
                 run('python manage.py migrate')
                 run('chmod a+x ./restart.sh')
