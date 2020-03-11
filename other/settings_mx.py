@@ -26,7 +26,7 @@ SECRET_KEY = '%n5*pngk^ggpcpbsljh(c2z(una_)62(bfof8+k#&a-ixle(x2'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['47.106.174.128', 'www.dogebug.online', 'fuel.dogebug.cn']
+ALLOWED_HOSTS = ['fuel.dogebug.cn', 'fuel.dogez.cn']
 
 
 # Application definition
