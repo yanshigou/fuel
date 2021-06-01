@@ -9,7 +9,7 @@ Pillow==5.4.1
 PyMySQL==0.9.3
 pytz==2018.9
 requests==2.21.0
-urllib3==1.24.1
+urllib3==1.26.5
 fabric==1.14.0
 fabric-virtualenv
 celery-with-redis
